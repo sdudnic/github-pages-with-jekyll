@@ -6,7 +6,7 @@ description: > # this means to ignore newlines until "baseurl:"
   graphs and API's used to show the new virus
   propagation, cases, recoveries, deaths etc.
 
-theme: minima
+theme: jekyll-theme-cayman
 
 # social links
 twitter_username: your-twitter-handle # DO NOT include the @ character, or else the build will fail!
