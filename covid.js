@@ -2,11 +2,12 @@ const daysNumber = 8;
 
 var startDate = new Date(Date.now());
 startDate.setDate(startDate.getDate() - daysNumber);
+var startDateString = startDate.toISOString();
 
 var url = {
-    "confirmed": "https://api.covid19api.com/live/country/france/status/confirmed",
-    "deaths": "https://api.covid19api.com/live/country/france/status/deaths",
-    "recovered": "https://api.covid19api.com/live/country/france/status/recovered",
+    "confirmed": "https://api.covid19api.com/live/country/france/status/confirmed/date/" + startDateString,
+    "deaths": "https://api.covid19api.com/live/country/france/status/deaths/date/" + startDateString,
+    "recovered": "https://api.covid19api.com/live/country/france/status/recovered/date/" + startDateString,
 };
 
 var data = {};
@@ -25,7 +26,7 @@ function getConfirmed() {
 
 function getRecovered(confirmed) {
     confirmed = confirmed.filter(item => item.Province == "");
-    confirmed = confirmed.slice(Math.max(confirmed.length - daysNumber, 0));
+    //confirmed = confirmed.slice(Math.max(confirmed.length - daysNumber, 0));
     for (const item of confirmed) {
         var theDate = new Date(Date.parse(item.Date));
         data.addRow([theDate, item.Cases, 0, 0]);
@@ -36,7 +37,7 @@ function getRecovered(confirmed) {
 function getDeaths(recovered) {
     var row = 0;
     recovered = recovered.filter(item => item.Province == "");
-    recovered = recovered.slice(Math.max(recovered.length - daysNumber, 0));
+    //recovered = recovered.slice(Math.max(recovered.length - daysNumber, 0));
     for (const item of recovered) {
         data.setCell(row, 2, item.Cases);
         row++;
@@ -47,7 +48,7 @@ function getDeaths(recovered) {
 function finalize(deaths) {
     var row = 0;
     deaths = deaths.filter(item => item.Province == "");
-    deaths = deaths.slice(Math.max(deaths.length - daysNumber, 0));
+    //deaths = deaths.slice(Math.max(deaths.length - daysNumber, 0));
     for (const item of deaths) {
         data.setCell(row, 3, item.Cases);
         row++;
