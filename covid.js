@@ -20,13 +20,17 @@ google.charts.load('current', {
 // Set a callback to run when the Google Visualization API is loaded.
 google.charts.setOnLoadCallback(drawChart);
 
+function filterUniqueDates(e, i, arr) {
+    return (i == arr.length - 1 ||
+        (new Date(e.Date)).toDateString() != (new Date(arr[i + 1].Date)).toDateString());
+}
+
 function getConfirmed() {
     return $.get(url.confirmed);
 }
 
 function getRecovered(confirmed) {
-    confirmed = confirmed.filter(item => item.Province == "");
-    //confirmed = confirmed.slice(Math.max(confirmed.length - daysNumber, 0));
+    confirmed = confirmed.filter(item => item.Province == "").filter(filterUniqueDates);
     for (const item of confirmed) {
         var theDate = new Date(Date.parse(item.Date));
         data.addRow([theDate, item.Cases, 0, 0]);
@@ -36,8 +40,7 @@ function getRecovered(confirmed) {
 
 function getDeaths(recovered) {
     var row = 0;
-    recovered = recovered.filter(item => item.Province == "");
-    //recovered = recovered.slice(Math.max(recovered.length - daysNumber, 0));
+    recovered = recovered.filter(item => item.Province == "").filter(filterUniqueDates);
     for (const item of recovered) {
         data.setCell(row, 2, item.Cases);
         row++;
@@ -47,8 +50,7 @@ function getDeaths(recovered) {
 
 function finalize(deaths) {
     var row = 0;
-    deaths = deaths.filter(item => item.Province == "");
-    //deaths = deaths.slice(Math.max(deaths.length - daysNumber, 0));
+    deaths = deaths.filter(item => item.Province == "").filter(filterUniqueDates);
     for (const item of deaths) {
         data.setCell(row, 3, item.Cases);
         row++;
