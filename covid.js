@@ -24,7 +24,7 @@ function getConfirmed() {
 }
 
 function getRecovered(confirmed) {
-    confirmed = confirmed.filter(item => item.Province == "France");
+    confirmed = confirmed.filter(item => item.Province == "");
     confirmed = confirmed.slice(Math.max(confirmed.length - daysNumber, 0));
     for (const item of confirmed) {
         var theDate = new Date(Date.parse(item.Date));
@@ -35,7 +35,7 @@ function getRecovered(confirmed) {
 
 function getDeaths(recovered) {
     var row = 0;
-    recovered = recovered.filter(item => item.Province == "France");
+    recovered = recovered.filter(item => item.Province == "");
     recovered = recovered.slice(Math.max(recovered.length - daysNumber, 0));
     for (const item of recovered) {
         data.setCell(row, 2, item.Cases);
@@ -46,7 +46,7 @@ function getDeaths(recovered) {
 
 function finalize(deaths) {
     var row = 0;
-    deaths = deaths.filter(item => item.Province == "France");
+    deaths = deaths.filter(item => item.Province == "");
     deaths = deaths.slice(Math.max(deaths.length - daysNumber, 0));
     for (const item of deaths) {
         data.setCell(row, 3, item.Cases);
