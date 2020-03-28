@@ -1,6 +1,6 @@
 const daysNumber = 8;
 
-var startDate = new Date(Date.now());
+var startDate = new Date(Date.now().toDateString());
 startDate.setDate(startDate.getDate() - daysNumber);
 var startDateString = startDate.toISOString();
 
@@ -20,6 +20,9 @@ google.charts.load('current', {
 // Set a callback to run when the Google Visualization API is loaded.
 google.charts.setOnLoadCallback(drawChart);
 
+function filterProvince(e){ 
+    return e.Province == "France" || e.Province == ""; 
+}
 function filterUniqueDates(e, i, arr) {
     return (i == arr.length - 1 ||
         (new Date(e.Date)).toDateString() != (new Date(arr[i + 1].Date)).toDateString());
@@ -30,7 +33,7 @@ function getConfirmed() {
 }
 
 function getRecovered(confirmed) {
-    confirmed = confirmed.filter(item => item.Province == "").filter(filterUniqueDates);
+    confirmed = confirmed.filter(filterProvince).filter(filterUniqueDates);
     for (const item of confirmed) {
         var theDate = new Date(Date.parse(item.Date));
         data.addRow([theDate, item.Cases, 0, 0]);
@@ -40,7 +43,7 @@ function getRecovered(confirmed) {
 
 function getDeaths(recovered) {
     var row = 0;
-    recovered = recovered.filter(item => item.Province == "").filter(filterUniqueDates);
+    recovered = recovered.filter(filterProvince).filter(filterUniqueDates);
     for (const item of recovered) {
         data.setCell(row, 2, item.Cases);
         row++;
@@ -50,7 +53,7 @@ function getDeaths(recovered) {
 
 function finalize(deaths) {
     var row = 0;
-    deaths = deaths.filter(item => item.Province == "").filter(filterUniqueDates);
+    deaths = deaths.filter(filterProvince).filter(filterUniqueDates);
     for (const item of deaths) {
         data.setCell(row, 3, item.Cases);
         row++;
