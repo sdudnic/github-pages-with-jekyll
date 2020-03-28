@@ -1,6 +1,6 @@
 const daysNumber = 8;
 
-var startDate = new Date(Date.now().toDateString());
+var startDate = new Date(new Date().toDateString());
 startDate.setDate(startDate.getDate() - daysNumber);
 var startDateString = startDate.toISOString();
 
