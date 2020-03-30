@@ -32,7 +32,7 @@ var codes = {
     "fra": "france",
     "mda": "moldova",
     "rus": "russia",
-    "ita": "italia",
+    "ita": "italy",
     "ukr": "ukraine",
 };
 
