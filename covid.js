@@ -200,7 +200,7 @@ function updateGraph(code) {
 function getIsoCodeFromUrl() {
     var stringUrl = window.location.href;
     var url = new URL(stringUrl);
-    var code = url.searchParams.get("country");
+    var code = url.searchParams.get("country") || url.searchParams.get("c");
     if (!code) {
         return null;
     }
