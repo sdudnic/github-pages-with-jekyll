@@ -27,15 +27,6 @@ var updated = {
 
 var START_CODE = "mda";
 
-var codes = {
-    "deu": "germany",
-    "fra": "france",
-    "mda": "moldova",
-    "rus": "russia",
-    "ita": "italy",
-    "ukr": "ukraine",
-};
-
 var covidApiUrl = "https://covidapi.info/api/v1/country/";
 
 function filterFromStartDate(e) {
