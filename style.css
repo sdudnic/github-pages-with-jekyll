@@ -1,16 +1,30 @@
-.flex-container {
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-    background-color: antiquewhite;
-    border-radius: 1em;
-    height: 80%;
+.charts-container {
+    margin: 1em;
 }
 
-.flex-container>article {
-    height: 50%;
+.charts-container>article {
+    border: 1px solid lightgray;
+    margin: 0 0 1em 0;
+    border-radius: 1em;
+    min-height: 400px;
+}
+
+section.heading {
+    text-align: center;
 }
 
 input[type=number] {
     width: 70px;
+}
+
+label[for=confirmed] {
+    color: orange;
+}
+
+label[for=recovered] {
+    color: green;
+}
+
+label[for=deaths] {
+    color: red;
 }

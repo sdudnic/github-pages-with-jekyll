@@ -116,7 +116,7 @@ function drawChart(code, elementId) {
             var totalChartOptions = {
                 chart: {
                     title: 'Total cases',
-                    subtitle: 'last ' + daysNumber + ' days'
+                    titlePosition: 'out'
                 },
                 curveType: 'function',
                 is3D: true,
@@ -132,21 +132,20 @@ function drawChart(code, elementId) {
                     x: {
                         0: {
                             side: 'top',
-                            label: '',
-                            format: 'dd/MM/yy'
                         }
                     }
                 },
                 hAxis: {
+                    title: '',
                     format: "dd/MM"
                 },
-                colors: ['gold', 'green', 'red'],
+                colors: ['orange', 'green', 'red'],
             };
 
             var newChartOptions = {
                 chart: {
                     title: 'New cases',
-                    subtitle: 'last ' + daysNumber + ' days'
+                    titlePosition: 'in'
                 },
                 curveType: 'function',
                 is3D: true,
@@ -170,7 +169,7 @@ function drawChart(code, elementId) {
                 hAxis: {
                     format: "dd/MM"
                 },
-                colors: ['gold', 'green', 'red'],
+                colors: ['orange', 'green', 'red'],
             };
 
             var formatter = new google.visualization.DateFormat({
