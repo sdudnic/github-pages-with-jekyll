@@ -6,7 +6,7 @@ description: >
   graphs and API's used to show the new virus
   propagation, cases, recoveries, deaths etc.
 
-theme: jekyll-theme-cayman
+theme: jekyll-theme-minimal
 
 # social links
 twitter_username: sdudnic
