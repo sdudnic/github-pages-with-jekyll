@@ -132,6 +132,7 @@ function drawChart(code, elementId) {
                         }
                     }
                 },
+                hAxis: {format: "dd/MM"},
                 colors: ['gold', 'green', 'red'],
             };
 
@@ -159,6 +160,7 @@ function drawChart(code, elementId) {
                         }
                     }
                 },
+                hAxis: {format: "dd/MM"},
                 colors: ['gold', 'green', 'red'],
             };
 
