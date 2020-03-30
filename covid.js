@@ -35,6 +35,17 @@ function filterFromStartDate(e) {
 
 $('#updateData').on('click', updateData);
 
+function udpateFields(confirmed, recovered, deaths, updateDate) {
+    if (!updateDate || !(updateDate instanceof Date)) {
+        updateDate = new Date();
+    }
+
+    $("#confirmed").val(confirmed || "");
+    $("#recovered").val(recovered || "");
+    $("#deaths").val(deaths || "");
+    $("#lastApiUpdate").text(updateDate.toISOString().slice(0, 10));
+}
+
 function drawChart(code, elementId) {
     var totalData = {};
     var newData = {};
@@ -45,6 +56,10 @@ function drawChart(code, elementId) {
     totalData.addColumn("number", "Confirmed");
     totalData.addColumn("number", "Recovered");
     totalData.addColumn("number", "Deaths");
+    totalData.addColumn({
+        role: 'annotation',
+        type: 'string'
+    });
 
     newData = new google.visualization.DataTable();
 
@@ -52,43 +67,62 @@ function drawChart(code, elementId) {
     newData.addColumn("number", "Confirmed");
     newData.addColumn("number", "Recovered");
     newData.addColumn("number", "Deaths");
+    newData.addColumn({
+        role: 'annotation',
+        type: 'string'
+    });
+
     var apiUrl = covidApiUrl + code;
+    var prevConfirmed = 0,
+        prevRecovered = 0,
+        prevDeaths = 0,
+        lastApiUpdate = null;
 
     $.get(apiUrl)
-        .then((apiAnswer) => {
+        .done((apiAnswer) => {
             var results = Object.entries(apiAnswer.result).filter(filterFromStartDate);
-            var prevConfirmed = 0,
-                prevRecovered = 0,
-                prevDeaths = 0,
-                lastApiUpdate = {};
 
-            for (let i = 0; i < results.length; i++) {
-                const item = results[i][1];
-                lastApiUpdate = new Date(results[i][0]);
+            if (results.length === 0) { // no data
+                totalData.addRow([null, 0, 0, 0, "NO DATA"]);
+                newData.addRow([null, 0, 0, 0, "NO DATA"]);
+                udpateFields();
 
-                var totalConfirmed = item.confirmed;
-                var newConfirmed = totalConfirmed - prevConfirmed;
-                prevConfirmed = totalConfirmed;
+            } else { // we have data
 
-                var totalRecovered = item.recovered;
-                var newRecovered = totalRecovered - prevRecovered;
-                prevRecovered = totalRecovered;
+                for (let i = 0; i < results.length; i++) {
+                    const item = results[i][1];
+                    lastApiUpdate = new Date(results[i][0]);
 
-                var totalDeaths = item.deaths;
-                var newDeaths = totalDeaths - prevDeaths;
-                prevDeaths = totalDeaths;
+                    var totalConfirmed = item.confirmed;
+                    var newConfirmed = totalConfirmed - prevConfirmed;
+                    prevConfirmed = totalConfirmed;
 
-                if (i > 0) {
-                    totalData.addRow([lastApiUpdate, totalConfirmed, totalRecovered, totalDeaths]);
-                    newData.addRow([lastApiUpdate, newConfirmed, newRecovered, newDeaths]);
+                    var totalRecovered = item.recovered;
+                    var newRecovered = totalRecovered - prevRecovered;
+                    prevRecovered = totalRecovered;
+
+                    var totalDeaths = item.deaths;
+                    var newDeaths = totalDeaths - prevDeaths;
+                    prevDeaths = totalDeaths;
+
+                    if (i > 0) {
+                        totalData.addRow([lastApiUpdate, totalConfirmed, totalRecovered, totalDeaths, null]);
+                        newData.addRow([lastApiUpdate, newConfirmed, newRecovered, newDeaths, null]);
+                    }
                 }
             }
+        })
+        .fail((e) => {
+            totalData.addRow([null, 0, 0, 0, "NO DATA"]);
+            newData.addRow([null, 0, 0, 0, "NO DATA"]);
+            udpateFields();
+        })
+        .always(() => {
+
             if (!updated.date) {
-                $("#confirmed").val(prevConfirmed);
-                $("#recovered").val(prevRecovered);
-                $("#deaths").val(prevDeaths);
-                $("#lastApiUpdate").text(lastApiUpdate.toISOString().slice(0, 10));
+                udpateFields(prevConfirmed, prevRecovered, prevDeaths, lastApiUpdate);
             }
+
             /********************/
             if (updated.date && updated.date > lastApiUpdate) {
                 var totalConfirmed = updated.confirmed;
@@ -100,24 +134,32 @@ function drawChart(code, elementId) {
                 var totalDeaths = updated.deaths;
                 var newDeaths = totalDeaths - prevDeaths;
 
-                totalData.addRow([updated.date, totalConfirmed, totalRecovered, totalDeaths]);
-                newData.addRow([updated.date, newConfirmed, newRecovered, newDeaths]);
+                totalData.addRow([updated.date, totalConfirmed, totalRecovered, totalDeaths, null]);
+                newData.addRow([updated.date, newConfirmed, newRecovered, newDeaths, null]);
             }
             /********************/
+
             var totalChartOptions = {
                 chart: {
                     title: 'Total cases',
-                    titlePosition: 'out'
+                    titlePosition: 'in'
                 },
                 curveType: 'function',
                 is3D: true,
                 legend: {
                     position: 'none'
                 },
-                series: {
-                    0: "Big",
-                    1: "Small",
-                    2: "Small"
+                // set annotation for -- No Data Copy
+                annotations: {
+                    // remove annotation stem and push to middle of chart
+                    stem: {
+                        color: 'transparent',
+                        length: 120
+                    },
+                    textStyle: {
+                        color: 'red',
+                        fontSize: 22
+                    }
                 },
                 axes: {
                     x: {
@@ -133,41 +175,12 @@ function drawChart(code, elementId) {
                 colors: ['orange', 'green', 'red'],
             };
 
-            var newChartOptions = {
-                chart: {
-                    title: 'New cases',
-                    titlePosition: 'in'
-                },
-                curveType: 'function',
-                is3D: true,
-                legend: {
-                    position: 'none'
-                },
-                series: {
-                    0: "Big",
-                    1: "Small",
-                    2: "Small"
-                },
-                axes: {
-                    x: {
-                        0: {
-                            side: 'top',
-                            label: '',
-                            format: 'dd/MM/yy'
-                        }
-                    }
-                },
-                hAxis: {
-                    format: "dd/MM"
-                },
-                colors: ['orange', 'green', 'red'],
-            };
+            var newChartOptions = JSON.parse(JSON.stringify(totalChartOptions)); // clone
+            newChartOptions.chart.title = "New cases";
 
-            var formatter = new google.visualization.DateFormat({
-                pattern: 'dd/MM/yy'
-            });
-            formatter.format(totalData, 0);
-            formatter.format(newData, 0);
+            // var formatter = new google.visualization.DateFormat({ pattern: 'dd/MM/yy' });
+            // formatter.format(totalData, 0);
+            // formatter.format(newData, 0);
 
             var totalElement = $("article.total-chart")[0];
             var newElement = $("article.new-chart")[0];
@@ -191,6 +204,7 @@ function getIsoCodeFromUrl() {
     var stringUrl = window.location.href;
     var url = new URL(stringUrl);
     var code = url.searchParams.get("country") || url.searchParams.get("c");
+
     if (!code) {
         return null;
     }
@@ -198,37 +212,43 @@ function getIsoCodeFromUrl() {
     code = code.toLowerCase();
 
     var codeISO = "";
-    if (Object.keys(codes).includes(code)) {
-        codeISO = code;
-    } else if (Object.values(codes).includes(code)) {
-        codeISO = Object.keys(codes).find(key => codes[key] === code);
+    var countryFound = countries.find(c => c.value === code);
+
+    if (countryFound) {
+        return countryFound.value;
+    }
+
+    countryFound = countries.find(c.text.toLowerCase() === code);
+    if (countryFound) {
+        return countryFound.value;
     } else {
         return null;
     }
-    return codeISO;
 }
 
-function drawCharts() {
-    for (const code in codes) {
-        $("#country").append($("<option>", {
-            value: code,
-            text: codes[code].charAt(0).toUpperCase() + codes[code].slice(1)
-        }));
-    }
-    $("select#country").change(function (e) {
-        var code = $(e.target).val()
-        drawChart(code);
-    });
-
-    var startCode = getIsoCodeFromUrl() || START_CODE;
-
-    updateGraph(startCode);
-}
+var app = new Vue({
+    el: '#app',
+    //vuetify: new Vuetify()
+});
 
 // Load the Visualization API and the corechart package.
 google.charts.load('current', {
-    'packages': ['line']
-});
+    callback: function () {
+        var sortedCountries = countries.sort((a, b) => a.text.localeCompare(b.text, "en", {
+            ignorePunctuation: true
+        }));
+        for (var country of sortedCountries) {
+            $("#country").append($("<option>", country));
+        }
+        $("select#country").change(function (e) {
+            var code = $(e.target).val();
+            drawChart(code);
+        });
 
-// Set a callback to run when the Google Visualization API is loaded.
-google.charts.setOnLoadCallback(drawCharts);
+        var startCode = getIsoCodeFromUrl() || START_CODE;
+
+        updateGraph(startCode);
+    },
+    'packages': ['line'],
+    language: "ro"
+});

@@ -1,6 +1,12 @@
+<!DOCTYPE html>
 <html>
 
 <head>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -17,35 +23,56 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://dudnic.com/covid-19/">
     <meta property="og:title" content="Coronavirus COVID-19 evolution graphs by country">
-    <meta property="og:description" content="covid-19 cases by country, new & total cases, recoveries, deaths from dudnic.com">
+    <meta property="og:description"
+        content="covid-19 cases by country, new & total cases, recoveries, deaths from dudnic.com">
     <meta property="og:image" content="https://dudnic.com/covid-19/assets/virus19.png">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://dudnic.com/covid-19/">
     <meta property="twitter:title" content="Coronavirus COVID-19 evolution graphs by country">
-    <meta property="twitter:description" content="covid-19 cases by country, new & total cases, recoveries, deaths from dudnic.com">
+    <meta property="twitter:description"
+        content="covid-19 cases by country, new & total cases, recoveries, deaths from dudnic.com">
     <meta property="twitter:image" content="https://dudnic.com/covid-19/assets/virus19.png">
 </head>
 
 <body>
-    <section class="heading">
-        <img src="assets/virus19.png" height="100">
-        <label for="country">COVID-19 cases in </label><select id="country"></select>
-        <label> as by <span id="lastApiUpdate"></span>, latest 14 days history</label>
-        <aside>
-            <!-- <label>Today data:</label> -->
-            <label for="confirmed">⚑ confimed ☛</label><input type="number" id="confirmed" name="confirmed">
-            <label for="recovered">⚑ recovered ☛</label><input type="number" id="recovered" name="recovered">
-            <label for="deaths">⚑ deaths ☛</label><input type="number" id="deaths" name="deaths">
-            <!-- <button id="updateData">update</button> -->
-        </aside>
-    </section>
+    <div id="app">
+        <v-app>
+            <v-content>
+                <v-container fluid>
 
-    <div class="charts-container">
-        <article class="new-chart"></article>
-        <article class="total-chart"></article>
+                    <section class="heading">
+                        <img src="assets/virus19.png" height="100">
+                        <label for="country">COVID-19 cases in </label>
+                        <select id="country"></select>
+                        <label> as by <span id="lastApiUpdate"></span>, latest 14 days history</label>
+                        <aside>
+                            <!-- <label>Today data:</label> -->
+                            <label for="confirmed">⚑ confimed ☛</label><input type="number" id="confirmed"
+                                name="confirmed">
+                            <label for="recovered">⚑ recovered ☛</label><input type="number" id="recovered"
+                                name="recovered">
+                            <label for="deaths">⚑ deaths ☛</label><input type="number" id="deaths" name="deaths">
+                            <!-- <button id="updateData">update</button> -->
+                        </aside>
+                    </section>
+
+                    <div class="charts-container">
+                        <article class="new-chart"></article>
+                        <article class="total-chart"></article>
+                    </div>
+                </v-container>
+            </v-content>
+        </v-app>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+
+</body>
+
+</html>
 
 </body>
 
