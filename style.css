@@ -1,0 +1,16 @@
+.flex-container {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    background-color: antiquewhite;
+    border-radius: 1em;
+    height: 80%;
+}
+
+.flex-container>article {
+    height: 50%;
+}
+
+input[type=number] {
+    width: 70px;
+}

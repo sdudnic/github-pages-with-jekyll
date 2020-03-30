@@ -1,94 +1,206 @@
-const daysNumber = 8;
+const daysNumber = 14;
 
-var startDate = new Date(new Date().toDateString());
-startDate.setDate(startDate.getDate() - daysNumber);
-var startDateString = startDate.toISOString();
+function updateData() {
+    updated.date = new Date();
+    updated.confirmed = $("#confirmed").val();
+    updated.recovered = $("#recovered").val();
+    updated.deaths = $("#deaths").val();
+    updateGraph();
+}
 
-var url = {
-    "confirmed": "https://api.covid19api.com/live/country/france/status/confirmed/date/" + startDateString,
-    "deaths": "https://api.covid19api.com/live/country/france/status/deaths/date/" + startDateString,
-    "recovered": "https://api.covid19api.com/live/country/france/status/recovered/date/" + startDateString,
+Date.prototype.addDays = function (days) {
+    var date = new Date(this.valueOf());
+    date.setDate(date.getDate() + days);
+    return date;
+}
+var now = new Date();
+var utcNow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+startDate = utcNow.addDays(-daysNumber - 1);
+var startDateString = startDate.toISOString().slice(0, 10);
+
+var updated = {
+    date: null,
+    confirmed: null,
+    recovered: null,
+    deaths: null
 };
 
-var data = {};
+var codes = {
+    "FRA": "France",
+    "MDA": "Moldova",
+    "RUS": "Russia"
+};
+
+var covidApiUrl = "https://covidapi.info/api/v1/country/";
+
+function filterFromStartDate(e) {
+    return (e[0] >= startDateString);
+}
+
+$('#updateData').on('click', updateData);
+
+function drawChart(code, elementId) {
+    var totalData = {};
+    var newData = {};
+
+    totalData = new google.visualization.DataTable();
+
+    totalData.addColumn("date", "Date");
+    totalData.addColumn("number", "Confirmed");
+    totalData.addColumn("number", "Recovered");
+    totalData.addColumn("number", "Deaths");
+
+    newData = new google.visualization.DataTable();
+
+    newData.addColumn("date", "Date");
+    newData.addColumn("number", "Confirmed");
+    newData.addColumn("number", "Recovered");
+    newData.addColumn("number", "Deaths");
+    var apiUrl = covidApiUrl + code;
+
+    $.get(apiUrl)
+        .then((apiAnswer) => {
+            var results = Object.entries(apiAnswer.result).filter(filterFromStartDate);
+            var prevConfirmed = 0,
+                prevRecovered = 0,
+                prevDeaths = 0,
+                lastApiUpdate = {};
+
+            for (let i = 0; i < results.length; i++) {
+                const item = results[i][1];
+                lastApiUpdate = new Date(results[i][0]);
+
+                var totalConfirmed = item.confirmed;
+                var newConfirmed = totalConfirmed - prevConfirmed;
+                prevConfirmed = totalConfirmed;
+
+                var totalRecovered = item.recovered;
+                var newRecovered = totalRecovered - prevRecovered;
+                prevRecovered = totalRecovered;
+
+                var totalDeaths = item.deaths;
+                var newDeaths = totalDeaths - prevDeaths;
+                prevDeaths = totalDeaths;
+
+                if (i > 0) {
+                    totalData.addRow([lastApiUpdate, totalConfirmed, totalRecovered, totalDeaths]);
+                    newData.addRow([lastApiUpdate, newConfirmed, newRecovered, newDeaths]);
+                }
+            }
+            if (!updated.date) {
+                $("#confirmed").val(prevConfirmed);
+                $("#recovered").val(prevRecovered);
+                $("#deaths").val(prevDeaths);
+                $("#lastApiUpdate").text(lastApiUpdate.toISOString().slice(0, 10));
+            }
+            /********************/
+            if (updated.date && updated.date > lastApiUpdate) {
+                var totalConfirmed = updated.confirmed;
+                var newConfirmed = totalConfirmed - prevConfirmed;
+
+                var totalRecovered = updated.recovered;
+                var newRecovered = totalRecovered - prevRecovered;
+
+                var totalDeaths = updated.deaths;
+                var newDeaths = totalDeaths - prevDeaths;
+
+                totalData.addRow([updated.date, totalConfirmed, totalRecovered, totalDeaths]);
+                newData.addRow([updated.date, newConfirmed, newRecovered, newDeaths]);
+            }
+            /********************/
+            var totalChartOptions = {
+                chart: {
+                    title: 'Total cases',
+                    subtitle: 'last ' + daysNumber + ' days'
+                },
+                curveType: 'function',
+                is3D: true,
+                legend: {
+                    position: 'none'
+                },
+                series: {
+                    0: "Big",
+                    1: "Small",
+                    2: "Small"
+                },
+                axes: {
+                    x: {
+                        0: {
+                            side: 'top',
+                            label: '',
+                            format: 'dd/MM/yy'
+                        }
+                    }
+                },
+                colors: ['gold', 'green', 'red'],
+            };
+
+            var newChartOptions = {
+                chart: {
+                    title: 'New cases',
+                    subtitle: 'last ' + daysNumber + ' days'
+                },
+                curveType: 'function',
+                is3D: true,
+                legend: {
+                    position: 'none'
+                },
+                series: {
+                    0: "Big",
+                    1: "Small",
+                    2: "Small"
+                },
+                axes: {
+                    x: {
+                        0: {
+                            side: 'top',
+                            label: '',
+                            format: 'dd/MM/yy'
+                        }
+                    }
+                },
+                colors: ['gold', 'green', 'red'],
+            };
+
+            var formatter = new google.visualization.DateFormat({
+                pattern: 'dd/MM/yy'
+            });
+            formatter.format(totalData, 0);
+            formatter.format(newData, 0);
+
+            var totalElement = $("article.total-chart")[0];
+            var newElement = $("article.new-chart")[0];
+
+            var chart = new google.charts.Line(totalElement);
+            chart.draw(totalData, google.charts.Line.convertOptions(totalChartOptions));
+
+            chart = new google.charts.Line(newElement);
+            chart.draw(newData, google.charts.Line.convertOptions(newChartOptions));
+        });
+}
+
+function updateGraph() {
+    $("select#country").trigger('change');
+}
+
+function drawCharts() {
+    for (const code in codes) {
+        $("#country").append($("<option>", {
+            value: code,
+            text: codes[code]
+        }));
+        $("select#country").change(function (e) {
+            var code = $(e.target).val()
+            drawChart(code);
+        });
+        updateGraph();
+    }
+}
 
 // Load the Visualization API and the corechart package.
 google.charts.load('current', {
-    'packages': ['corechart']
+    'packages': ['line']
 });
 
 // Set a callback to run when the Google Visualization API is loaded.
-google.charts.setOnLoadCallback(drawChart);
-
-function filterProvince(e){ 
-    return e.Province == "France" || e.Province == ""; 
-}
-function filterUniqueDates(e, i, arr) {
-    return (i == arr.length - 1 ||
-        (new Date(e.Date)).toDateString() != (new Date(arr[i + 1].Date)).toDateString());
-}
-
-function getConfirmed() {
-    return $.get(url.confirmed);
-}
-
-function getRecovered(confirmed) {
-    confirmed = confirmed.filter(filterProvince).filter(filterUniqueDates);
-    for (const item of confirmed) {
-        var theDate = new Date(Date.parse(item.Date));
-        data.addRow([theDate, item.Cases, 0, 0]);
-    }
-    return $.get(url.recovered);
-}
-
-function getDeaths(recovered) {
-    var row = 0;
-    recovered = recovered.filter(filterProvince).filter(filterUniqueDates);
-    for (const item of recovered) {
-        data.setCell(row, 2, item.Cases);
-        row++;
-    }
-    return $.get(url.deaths);
-}
-
-function finalize(deaths) {
-    var row = 0;
-    deaths = deaths.filter(filterProvince).filter(filterUniqueDates);
-    for (const item of deaths) {
-        data.setCell(row, 3, item.Cases);
-        row++;
-    }
-
-    // Set chart options
-    var options = {
-        title: 'COVID-19 cases in France in the last ' + daysNumber + ' days',
-        curveType: 'function',
-        legend: {
-            position: 'bottom'
-        },
-        colors: ['blue', 'green', 'red'],
-    };
-
-    // Instantiate and draw our chart, passing in some options.
-    var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
-    chart.draw(data, options);
-}
-
-// Callback that creates and populates a data table,
-// instantiates the pie chart, passes in the data and
-// draws it.
-function drawChart() {
-    data = new google.visualization.DataTable();
-
-    data.addColumn("datetime", "Date");
-    data.addColumn("number", "Confirmed");
-    data.addColumn("number", "Recovered");
-    data.addColumn("number", "Deaths");
-    var formatter = new google.visualization.DateFormat({
-        formatType: 'short',
-        // pattern: 'dd/MM/yy'
-    });
-    formatter.format(data, 0);
-
-    getConfirmed().then(getRecovered).then(getDeaths).then(finalize);
-}
+google.charts.setOnLoadCallback(drawCharts);
