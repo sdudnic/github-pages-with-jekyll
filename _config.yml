@@ -1,15 +1,16 @@
-title: COVID-19 evolution in France 
+title: COVID-19 evolution 
 author: Serge Dudnic
-email: your-email@domain.com
-description: > # this means to ignore newlines until "baseurl:"
-  The site about COVID-19 evolution in France, 
+
+description: > 
+  The site about COVID-19 evolution, 
   graphs and API's used to show the new virus
   propagation, cases, recoveries, deaths etc.
 
-theme: jekyll-theme-cayman
+theme: jekyll-theme-minimal
 
 # social links
-twitter_username: your-twitter-handle # DO NOT include the @ character, or else the build will fail!
-github_username:  your-github-handle # DO NOT include the @ character, or else the build will fail!
+twitter_username: sdudnic
+github_username:  sdudnic
+facebook_username: serge.dudnic
 
 show_excerpts: true # set to false to remove excerpts on the homepage
