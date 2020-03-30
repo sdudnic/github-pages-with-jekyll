@@ -25,10 +25,15 @@ var updated = {
     deaths: null
 };
 
+var START_CODE = "mda";
+
 var codes = {
-    "FRA": "France",
-    "MDA": "Moldova",
-    "RUS": "Russia"
+    "deu": "germany",
+    "fra": "france",
+    "mda": "moldova",
+    "rus": "russia",
+    "ita": "italia",
+    "ukr": "ukraine",
 };
 
 var covidApiUrl = "https://covidapi.info/api/v1/country/";
@@ -132,7 +137,9 @@ function drawChart(code, elementId) {
                         }
                     }
                 },
-                hAxis: {format: "dd/MM"},
+                hAxis: {
+                    format: "dd/MM"
+                },
                 colors: ['gold', 'green', 'red'],
             };
 
@@ -160,7 +167,9 @@ function drawChart(code, elementId) {
                         }
                     }
                 },
-                hAxis: {format: "dd/MM"},
+                hAxis: {
+                    format: "dd/MM"
+                },
                 colors: ['gold', 'green', 'red'],
             };
 
@@ -181,22 +190,49 @@ function drawChart(code, elementId) {
         });
 }
 
-function updateGraph() {
-    $("select#country").trigger('change');
+function updateGraph(code) {
+    if ($("select#country").val() != code) {
+        $("select#country").val(code);
+    }
+    drawChart(code);
+}
+
+function getIsoCodeFromUrl() {
+    var stringUrl = window.location.href;
+    var url = new URL(stringUrl);
+    var code = url.searchParams.get("country");
+    if (!code) {
+        return null;
+    }
+
+    code = code.toLowerCase();
+
+    var codeISO = "";
+    if (Object.keys(codes).includes(code)) {
+        codeISO = code;
+    } else if (Object.values(codes).includes(code)) {
+        codeISO = Object.keys(codes).find(key => codes[key] === code);
+    } else {
+        return null;
+    }
+    return codeISO;
 }
 
 function drawCharts() {
     for (const code in codes) {
         $("#country").append($("<option>", {
             value: code,
-            text: codes[code]
+            text: codes[code].charAt(0).toUpperCase() + codes[code].slice(1)
         }));
-        $("select#country").change(function (e) {
-            var code = $(e.target).val()
-            drawChart(code);
-        });
-        updateGraph();
     }
+    $("select#country").change(function (e) {
+        var code = $(e.target).val()
+        drawChart(code);
+    });
+
+    var startCode = getIsoCodeFromUrl() || START_CODE;
+
+    updateGraph(startCode);
 }
 
 // Load the Visualization API and the corechart package.
