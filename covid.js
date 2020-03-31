@@ -226,6 +226,30 @@ function getIsoCodeFromUrl() {
     }
 }
 
+async function getIso3CodeFromIp() {
+    try {
+        var jsonUrl = {
+            ip: "https://ip.nf/me.json",
+            iso3: "https://raw.githubusercontent.com/sdudnic/covid-19/master/countries/iso3.json"
+        };
+        var init = {
+            headers: {
+                'Origin': '*'
+            }
+        };
+        var response = await fetch(jsonUrl.ip, init)
+            .then((j2) => j2.json())
+            .then((iso2) => fetch(jsonUrl.iso3)
+                .then((j3) => j3.json())
+                .then((iso3) => {
+                    return iso3[iso2.ip.country_code];
+                }));
+        return response;
+    } catch (error) {
+        return null;
+    }
+}
+
 var app = new Vue({
     el: '#app',
     //vuetify: new Vuetify()
@@ -245,9 +269,16 @@ google.charts.load('current', {
             drawChart(code);
         });
 
-        var startCode = getIsoCodeFromUrl() || START_CODE;
-
-        updateGraph(startCode);
+        var urlCode = getIsoCodeFromUrl();
+        if (urlCode) {
+            updateGraph(urlCode);
+        } else {
+            getIso3CodeFromIp().then((iso3) => {
+                iso3 = iso3 || START_CODE;
+                iso3 = iso3.toLowerCase();
+                updateGraph(iso3);
+            });
+        }
     },
     'packages': ['line'],
     language: "ro"
