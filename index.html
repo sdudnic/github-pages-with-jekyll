@@ -69,7 +69,29 @@
 
     <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-app.js"></script>
 
+    <!-- TODO: Add SDKs for Firebase products that you want to use
+     https://firebase.google.com/docs/web/setup#available-libraries -->
+    <script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-analytics.js"></script>
+
+    <script>
+        // Your web app's Firebase configuration
+        var firebaseConfig = {
+            apiKey: "AIzaSyCmE_qv9mB1ZguINk6sHzUVZo6tEmuL9ck",
+            authDomain: "covid19-a00fd.firebaseapp.com",
+            databaseURL: "https://covid19-a00fd.firebaseio.com",
+            projectId: "covid19-a00fd",
+            storageBucket: "covid19-a00fd.appspot.com",
+            messagingSenderId: "1235969323",
+            appId: "1:1235969323:web:d82c4daea701da9daa116e",
+            measurementId: "G-C8FSD2G75X"
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        firebase.analytics();
+    </script>
 </body>
 
 </html>
