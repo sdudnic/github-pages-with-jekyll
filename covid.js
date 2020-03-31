@@ -242,6 +242,7 @@ async function getIso3CodeFromIp() {
             .then((iso2) => fetch(jsonUrl.iso3)
                 .then((j3) => j3.json())
                 .then((iso3) => {
+                    document.title = iso2.ip.country + " "+document.title;
                     return iso3[iso2.ip.country_code];
                 }));
         return response;
