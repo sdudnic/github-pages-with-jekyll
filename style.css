@@ -32,3 +32,7 @@ label[for=recovered] {
 label[for=deaths] {
     color: red;
 }
+
+footer {
+    text-align: right;
+}
