@@ -4,15 +4,10 @@
 <head>
     <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
 
-    <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="text/javascript" src="countries.js"></script>
-    <script type="text/javascript" src="covid.js"></script>
-    <link rel="stylesheet" href="https://dudnic.com/assets/main.css">
     <link rel="stylesheet" href="style.css">
     <!-- Primary Meta Tags -->
     <title>COVID-19 evolution graphs, coronavirus by country</title>
@@ -40,49 +35,69 @@
 <body>
     <div id="app">
         <v-app>
+            <v-app-bar app color="amber">
+                <img class="header-icon" src="assets/virus19.png">
+                <v-toolbar-title>COVID-19&nbsp;<span class="font-weight-light">evolution &nbsp;<span
+                            v-if="country.name">in&nbsp;{{country.name}}</span></span>
+                </v-toolbar-title>
+                <v-autocomplete v-model="country.iso3" :items="countriesList" single-line>
+                </v-autocomplete>
+                <v-spacer></v-spacer>
+
+                <v-btn icon>
+                    <v-icon>mid-heart</v-icon>
+                </v-btn>
+            </v-app-bar>
             <v-content>
                 <v-container fluid>
-
                     <section class="heading">
-                        <img src="assets/virus19.png" height="100">
-                        <h3>COVID-19 evolution</h3>
                         <div>
-                            <select id="country"></select>
+
                         </div>
                         <div>
                             <small>
-                                updated as of <span id="lastApiUpdate"></span>, 14 days trends
+                                last check <span id="lastApiUpdate">{{last.updateDate | isoDateTime}} (+ new cases
+                                    today)</span>
+
+                                <aside>
+                                    <span><label for="confirmed">⚑ confimed ☛ {{last.total.confirmed}}
+                                            (+{{last.new.confirmed}})</label><input type="number" id="confirmed"
+                                            name="confirmed"></span>
+                                    <span><label for="recovered">⚑ recovered ☛ {{last.total.recovered}}
+                                            (+{{last.new.recovered}})</label><input type="number" id="recovered"
+                                            name="recovered"></span>
+                                    <span><label for="deaths">⚑ deaths ☛ {{last.total.deaths}}
+                                            (+{{last.new.deaths}})</label><input type="number" id="deaths"
+                                            name="deaths"></span>
+                                </aside>
                             </small>
-                            <aside>
-                                <!-- <label>Today data:</label> -->
-                                <span><label for="confirmed">⚑ confimed ☛</label><input type="number" id="confirmed"
-                                        name="confirmed"></span>
-                                <span><label for="recovered">⚑ recovered ☛</label><input type="number" id="recovered"
-                                        name="recovered"></span>
-                                <span><label for="deaths">⚑ deaths ☛</label><input type="number" id="deaths"
-                                        name="deaths"></span>
-                                <!-- <button id="updateData">update</button> -->
-                            </aside>
                         </div>
                     </section>
-
                     <div class="charts-container">
                         <article class="new-chart"></article>
                         <article class="total-chart"></article>
                     </div>
-
-                    <footer>
-                        <small>© 2020 <a href="https://github.com/sdudnic/covid-19">GitHub project</a> managed by
-                            sdudnic</small>
-                    </footer>
                 </v-container>
             </v-content>
+            <v-footer absolute app>
+                <v-card-text class="py-2 text-right">
+                    {{ new Date().getFullYear() }} <a href="https://github.com/sdudnic/covid-19"
+                        target="blank">covid-19</a> project by
+                    <a href="https://github.com/sdudnic" target="blank">sdudnic</a> & co
+                </v-card-text>
+
+            </v-footer>
         </v-app>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
-
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="countries.js"></script>
+    <script type="text/javascript" src="covid.js"></script>
+    <script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js"></script>
 </body>
 
 </html>

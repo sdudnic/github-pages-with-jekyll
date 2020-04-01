@@ -50,10 +50,11 @@ label[for=deaths] {
     color: red;
 }
 
-footer {
-    text-align: right;
-}
-
 #lastApiUpdate {
     font-weight: bold;
+}
+
+.header-icon{
+    height: 5em;
+    margin-right: 1em;
 }

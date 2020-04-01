@@ -1,290 +1,315 @@
-const daysNumber = 14;
+new Vue({
+    el: '#app',
+    vuetify: new Vuetify(),
+    data: {
+        DEFAULT_CODE: "mda",
+        daysNumber: 14,
+        country: {
+            iso3: "",
+            name: ""
+        },
+        last: {
+            total: {
+                confirmed: 0,
+                recovered: 0,
+                deaths: 0
+            },
+            new: {
+                confirmed: 0,
+                recovered: 0,
+                deaths: 0
+            },
+            updateDate: new Date(),
 
-Date.prototype.addDays = function (days) {
-    var date = new Date(this.valueOf());
-    date.setDate(date.getDate() + days);
-    return date;
-}
-var now = new Date();
-var utcNow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-startDate = utcNow.addDays(-daysNumber - 1);
-var startDateString = startDate.toISOString().slice(0, 10);
+        },
+        totalChartOptions: {
+            chart: {
+                title: 'Total cases',
+                titlePosition: 'in'
+            },
+            curveType: 'function',
+            legend: {
+                position: 'none'
+            },
+            // set annotation for -- No Data Copy
+            annotations: {
+                // remove annotation stem and push to middle of chart
+                stem: {
+                    color: 'transparent',
+                    length: 120
+                },
+                textStyle: {
+                    color: 'red',
+                    fontSize: 22
+                }
+            },
+            axes: {
+                x: {
+                    0: {
+                        side: 'top',
+                    }
+                }
+            },
+            hAxis: {
+                title: '',
+                format: "dd/MM"
+            },
+            colors: ['orange', 'green', 'red'],
+            pointSize: 20,
+            pointShape: 'diamond',
+        },
+        countriesList: countries,
+        apiUrl: {
+            timeline: "https://covidapi.info/api/v1/country/***",
+            current: "https://services1.arcgis.com/0MSEUqKaxRlEPj5g/arcgis/rest/services/Coronavirus_2019_nCoV_Cases/FeatureServer/2/query?where=UPPER(Country_Region)%20like%20%27%25***%25%27&outFields=Last_Update,Confirmed,Deaths,Recovered,Country_Region&returnGeometry=false&outSR=4326&f=json"
+        },
+        startDateString: "",
+    },
+    methods: {
+        getApiUrl(countryCode, isTimeline) {
+            if (!countryCode) {
+                return null;
+            }
+            const placeholder = "***";
+            var url = "";
 
-var DEFAULT_CODE = "mda";
+            if (isTimeline) {
+                url = this.apiUrl.timeline.replace(placeholder, countryCode);
+            } else { // current value, no timeline
+                var country = countries.find((c) => c.value.toLowerCase() === countryCode.toLowerCase());
+                if (country) {
+                    countryName = country.text;
+                } else {
+                    return null;
+                }
+                url = this.apiUrl.current.replace(placeholder, countryName);
+            }
+            return url;
+        },
+        filterFromStartDate(e) {
+            return (e[0] >= this.startDateString);
+        },
+        updateFields(updateDate, confirmed, recovered, deaths) {
+            this.last.updateDate = updateDate;
+            this.last.total.confirmed = confirmed;
+            this.last.total.recovered = recovered;
+            this.last.total.deaths = deaths;
+        },
+        drawChart(code) {
+            var vm = this;
+            var totalData = {};
+            var newData = {};
 
-var apiUrl = {
-    timeline: "https://covidapi.info/api/v1/country/***",
-    current: "https://services1.arcgis.com/0MSEUqKaxRlEPj5g/arcgis/rest/services/Coronavirus_2019_nCoV_Cases/FeatureServer/2/query?where=UPPER(Country_Region)%20like%20%27%25***%25%27&outFields=Last_Update,Confirmed,Deaths,Recovered,Country_Region&returnGeometry=false&outSR=4326&f=json"
-};
+            totalData = new google.visualization.DataTable();
 
-function getApiUrl(countryCode, isTimeline) {
-    if (!countryCode) {
-        return null;
-    }
-    const placeholder = "***";
-    var url = "";
+            totalData.addColumn("date", "Date");
+            totalData.addColumn("number", "Confirmed");
+            totalData.addColumn("number", "Recovered");
+            totalData.addColumn("number", "Deaths");
+            totalData.addColumn({
+                role: 'annotation',
+                type: 'string'
+            });
 
-    if (isTimeline) {
-        url = apiUrl.timeline.replace(placeholder, countryCode);
-    } else { // current value, no timeline
-        var country = countries.find((c) => c.value.toLowerCase() === countryCode.toLowerCase());
-        if (country) {
-            countryName = country.text;
-        } else {
-            return null;
-        }
-        url = apiUrl.current.replace(placeholder, countryName);
-    }
-    return url;
-}
+            newData = new google.visualization.DataTable();
 
-function filterFromStartDate(e) {
-    return (e[0] >= startDateString);
-}
+            newData.addColumn("date", "Date");
+            newData.addColumn("number", "Confirmed");
+            newData.addColumn("number", "Recovered");
+            newData.addColumn("number", "Deaths");
+            newData.addColumn({
+                role: 'annotation',
+                type: 'string'
+            });
 
-function udpateFields(updateDate, confirmed, recovered, deaths) {
-    var dateText = "-";
-    if (updateDate && updateDate instanceof Date) {
-        dateText = updateDate.toLocaleDateString() + " " + updateDate.toLocaleTimeString();
-    }
-    $("#confirmed").val(confirmed || "");
-    $("#recovered").val(recovered || "");
-    $("#deaths").val(deaths || "");
-    $("#lastApiUpdate").text(dateText);
-}
+            var timelineApi = this.getApiUrl(code, true);
+            var previous = {
+                confirmed: 0,
+                recovered: 0,
+                deaths: 0
+            };
 
-function drawChart(code, elementId) {
-    var totalData = {};
-    var newData = {};
+            function addNewDataRow(date, confirmed, recovered, deaths, ignored) {
+                vm.last.updateDate = date;
 
-    totalData = new google.visualization.DataTable();
+                vm.last.total.confirmed = confirmed;
+                vm.last.new.confirmed = confirmed - previous.confirmed;
+                previous.confirmed = confirmed;
 
-    totalData.addColumn("date", "Date");
-    totalData.addColumn("number", "Confirmed");
-    totalData.addColumn("number", "Recovered");
-    totalData.addColumn("number", "Deaths");
-    totalData.addColumn({
-        role: 'annotation',
-        type: 'string'
-    });
+                vm.last.total.recovered = recovered;
+                vm.last.new.recovered = recovered - previous.recovered;
+                previous.recovered = recovered;
 
-    newData = new google.visualization.DataTable();
+                vm.last.total.deaths = deaths;
+                vm.last.new.deaths = deaths - previous.deaths;
+                previous.deaths = deaths;
 
-    newData.addColumn("date", "Date");
-    newData.addColumn("number", "Confirmed");
-    newData.addColumn("number", "Recovered");
-    newData.addColumn("number", "Deaths");
-    newData.addColumn({
-        role: 'annotation',
-        type: 'string'
-    });
-
-    var timelineApi = getApiUrl(code, true);
-    var prevConfirmed = 0,
-        prevRecovered = 0,
-        prevDeaths = 0,
-        lastApiUpdate = null;
-
-    function addNewDataRow(date, confirmed, recovered, deaths, ignored) {
-        lastApiUpdate = date;
-
-        var totalConfirmed = confirmed;
-        var newConfirmed = totalConfirmed - prevConfirmed;
-        prevConfirmed = totalConfirmed;
-
-        var totalRecovered = recovered;
-        var newRecovered = totalRecovered - prevRecovered;
-        prevRecovered = totalRecovered;
-
-        var totalDeaths = deaths;
-        var newDeaths = totalDeaths - prevDeaths;
-        prevDeaths = totalDeaths;
-
-        if (!ignored) {
-            totalData.addRow([lastApiUpdate, totalConfirmed, totalRecovered, totalDeaths, null]);
-            newData.addRow([lastApiUpdate, newConfirmed, newRecovered, newDeaths, null]);
-        }
-    }
-
-    $.get(timelineApi)
-        .done((apiAnswer) => {
-            var results = Object.entries(apiAnswer.result).filter(filterFromStartDate);
-
-            if (results.length === 0) { // no data
-                totalData.addRow([null, 0, 0, 0, "NO DATA"]);
-                newData.addRow([null, 0, 0, 0, "NO DATA"]);
-                udpateFields();
-
-            } else { // we have data
-
-                for (let i = 0; i < results.length; i++) {
-                    var myDate = new Date(results[i][0]);
-                    const item = results[i][1];
-                    var ignoreAdding = i == 0;
-                    addNewDataRow(myDate, item.confirmed, item.recovered, item.deaths, ignoreAdding);
+                if (!ignored) {
+                    totalData.addRow([date, confirmed, recovered, deaths, null]);
+                    newData.addRow([date, vm.last.new.confirmed, vm.last.new.recovered, vm.last.new.deaths, null]);
                 }
             }
-        })
-        .fail((e) => {
-            totalData.addRow([null, 0, 0, 0, "NO DATA"]);
-            newData.addRow([null, 0, 0, 0, "NO DATA"]);
-            udpateFields();
-        })
-        .always(() => {
-            var currentApi = getApiUrl(code, false);
 
-            fetch(currentApi).then((d) => d.json()).then((data) => {
-                var item = data.features[0].attributes;
-                var myDate = new Date(item.Last_Update);
+            $.get(timelineApi)
+                .done((apiAnswer) => {
+                    var results = Object.entries(apiAnswer.result).filter(vm.filterFromStartDate);
 
-                addNewDataRow(myDate, item.Confirmed, item.Recovered, item.Deaths);
+                    if (results.length === 0) { // no data
+                        totalData.addRow([null, 0, 0, 0, "NO DATA"]);
+                        newData.addRow([null, 0, 0, 0, "NO DATA"]);
+                        vm.updateFields();
 
-                udpateFields(myDate, item.Confirmed, item.Recovered, item.Deaths);
-
-                var totalChartOptions = {
-                    chart: {
-                        title: 'Total cases',
-                        titlePosition: 'in'
-                    },
-                    curveType: 'function',
-                    legend: {
-                        position: 'none'
-                    },
-                    // set annotation for -- No Data Copy
-                    annotations: {
-                        // remove annotation stem and push to middle of chart
-                        stem: {
-                            color: 'transparent',
-                            length: 120
-                        },
-                        textStyle: {
-                            color: 'red',
-                            fontSize: 22
+                    } else { // we have data
+                        for (let i = 0; i < results.length; i++) {
+                            var myDate = new Date(results[i][0]);
+                            const item = results[i][1];
+                            var ignoreAdding = i == 0;
+                            addNewDataRow(myDate, item.confirmed, item.recovered, item.deaths, ignoreAdding);
                         }
-                    },
-                    axes: {
-                        x: {
-                            0: {
-                                side: 'top',
-                            }
-                        }
-                    },
-                    hAxis: {
-                        title: '',
-                        format: "dd/MM"
-                    },
-                    colors: ['orange', 'green', 'red'],
-                    pointSize: 20,
-                    pointShape: 'diamond',
-                };
+                    }
+                })
+                .fail((e) => {
+                    totalData.addRow([null, 0, 0, 0, "NO DATA"]);
+                    newData.addRow([null, 0, 0, 0, "NO DATA"]);
+                    vm.updateFields();
+                })
+                .always(() => {
+                    var currentApi = vm.getApiUrl(code, false);
 
-                var newChartOptions = JSON.parse(JSON.stringify(totalChartOptions)); // clone
-                newChartOptions.chart.title = "Daily(new) cases";
+                    fetch(currentApi).then((d) => d.json()).then((data) => {
+                        var item = data.features[0].attributes;
+                        var myDate = new Date(item.Last_Update);
 
-                // var formatter = new google.visualization.DateFormat({ pattern: 'dd/MM/yy' });
-                // formatter.format(totalData, 0);
-                // formatter.format(newData, 0);
+                        addNewDataRow(myDate, item.Confirmed, item.Recovered, item.Deaths);
+                        vm.updateFields(myDate, item.Confirmed, item.Recovered, item.Deaths);
 
-                var totalElement = $("article.total-chart")[0];
-                var newElement = $("article.new-chart")[0];
+                        var newChartOptions = JSON.parse(JSON.stringify(vm.totalChartOptions)); // clone
+                        newChartOptions.chart.title = "Daily(new) cases";
 
-                var chart = new google.charts.Line(totalElement);
-                chart.draw(totalData, google.charts.Line.convertOptions(totalChartOptions));
+                        var formatter = new google.visualization.DateFormat({
+                            pattern: 'dd/MM/yy hh:mm'
+                        });
+                        formatter.format(totalData, 0);
+                        formatter.format(newData, 0);
 
-                chart = new google.charts.Line(newElement);
-                chart.draw(newData, google.charts.Line.convertOptions(newChartOptions));
-            });
-        });
-}
+                        var totalElement = $("article.total-chart")[0];
+                        var newElement = $("article.new-chart")[0];
 
-function updateGraph(code) {
-    if ($("select#country").val() != code) {
-        $("select#country").val(code);
-    }
-    drawChart(code);
-}
+                        var chart = new google.charts.Line(totalElement);
+                        chart.draw(totalData, google.charts.Line.convertOptions(vm.totalChartOptions));
 
-function getIsoCodeFromUrl() {
-    var stringUrl = window.location.href;
-    var url = new URL(stringUrl);
-    var code = url.searchParams.get("country") || url.searchParams.get("c");
+                        chart = new google.charts.Line(newElement);
+                        chart.draw(newData, google.charts.Line.convertOptions(newChartOptions));
+                    });
+                });
+        },
+        getIsoCodeFromUrl() {
+            var stringUrl = window.location.href;
+            var url = new URL(stringUrl);
+            var code = url.searchParams.get("c") || url.searchParams.get("country");
 
-    if (!code) {
-        return null;
-    }
-
-    code = code.toLowerCase();
-
-    var codeISO = "";
-    var countryFound = countries.find(c => c.value === code);
-
-    if (countryFound) {
-        return countryFound.value;
-    }
-
-    countryFound = countries.find(c.text.toLowerCase() === code);
-    if (countryFound) {
-        return countryFound.value;
-    } else {
-        return null;
-    }
-}
-
-async function getIso3CodeFromIp() {
-    try {
-        var jsonUrl = {
-            ip: "https://ip.nf/me.json",
-            iso3: "https://raw.githubusercontent.com/sdudnic/covid-19/master/countries/iso3.json"
-        };
-        var init = {
-            headers: {
-                'Origin': '*'
+            if (!code) {
+                return null;
             }
-        };
-        var response = await fetch(jsonUrl.ip, init)
-            .then((j2) => j2.json())
-            .then((iso2) => fetch(jsonUrl.iso3)
-                .then((j3) => j3.json())
-                .then((iso3) => {
-                    document.title = iso2.ip.country + " " + document.title;
-                    return iso3[iso2.ip.country_code];
-                }));
-        return response;
-    } catch (error) {
-        return null;
-    }
-}
 
-var app = new Vue({
-    el: '#app',
-    //vuetify: new Vuetify()
-});
+            code = code.toLowerCase();
 
-// Load the Visualization API and the corechart package.
-google.charts.load('current', {
-    callback: function () {
-        var sortedCountries = countries.sort((a, b) => a.text.localeCompare(b.text, "en", {
-            ignorePunctuation: true
-        }));
-        for (var country of sortedCountries) {
-            $("#country").append($("<option>", country));
+            var codeISO = "";
+            var countryFound = countries.find(c => c.value === code);
+
+            if (countryFound) {
+                return countryFound.value;
+            }
+
+            countryFound = countries.find(c.text.toLowerCase() === code);
+            if (countryFound) {
+                return countryFound.value;
+            } else {
+                return null;
+            }
+        },
+        changeTitle: function (countryName) {
+            const myRegex = /(^.*)(COVID\-19 evolution graphs,)/;
+            const replacement = countryName + " $2";
+            document.title = document.title.replace(myRegex, replacement);
+        },
+        getIso3CodeFromIp: async function () {
+            try {
+                var jsonUrl = {
+                    ip: "https://ip.nf/me.json",
+                    iso3: "https://raw.githubusercontent.com/sdudnic/covid-19/master/countries/iso3.json"
+                };
+                var init = {
+                    headers: {
+                        'Origin': '*'
+                    }
+                };
+                var response = await fetch(jsonUrl.ip, init)
+                    .then((j2) => j2.json())
+                    .then((iso2) => fetch(jsonUrl.iso3)
+                        .then((j3) => j3.json())
+                        .then((iso3) => {
+                            return iso3[iso2.ip.country_code];
+                        }));
+                return response;
+            } catch (error) {
+                return null;
+            }
+        },
+        countryChanged(newValue) {
+            this.drawChart(newValue.iso3);
+            this.changeTitle(newValue.name);
         }
-        $("select#country").change(function (e) {
-            var code = $(e.target).val();
-            drawChart(code);
-        });
 
-        var urlCode = getIsoCodeFromUrl();
-        if (urlCode) {
-            updateGraph(urlCode);
-        } else {
-            getIso3CodeFromIp().then((iso3) => {
-                iso3 = iso3 || DEFAULT_CODE;
-                iso3 = iso3.toLowerCase();
-                updateGraph(iso3);
-            });
+    },
+    filters: {
+        isoDateTime: function (value) {
+            var dateText = "-";
+            if (value && value instanceof Date) {
+                dateText = value.toISOString().slice(0, 10) + " " + value.toLocaleTimeString();
+            }
+            return dateText;
         }
     },
-    'packages': ['line'],
-    language: "ro"
+    watch: {
+        country: {
+            handler: 'countryChanged',
+            deep: true
+        }
+    },
+
+    mounted: function () {
+        var vm = this;
+
+        // define startDate
+        Date.prototype.addDays = function (days) {
+            var date = new Date(this.valueOf());
+            date.setDate(date.getDate() + days);
+            return date;
+        }
+        var now = new Date();
+        var utcNow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+        startDate = utcNow.addDays(-this.daysNumber - 1);
+        this.startDateString = startDate.toISOString().slice(0, 10);
+        // end define startDate
+
+        // Load the Visualization API and the line package.
+        google.charts.load('current', {
+            callback: function () {
+
+                var urlCode = vm.getIsoCodeFromUrl();
+                if (urlCode) {
+                    vm.country.iso3 = urlCode;
+                } else {
+                    vm.getIso3CodeFromIp().then((iso3) => {
+                        iso3 = iso3 || DEFAULT_CODE;
+                        iso3 = iso3.toLowerCase();
+                        vm.country.iso3 = iso3;
+                    });
+                }
+            },
+            'packages': ['line'],
+            language: "en"
+        });
+    }
 });
