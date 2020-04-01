@@ -21,6 +21,10 @@ aside {
     border-radius: .5em;
 }
 
+aside>span {
+    white-space: nowrap;
+}
+
 section.heading {
     text-align: center;
     margin: 1em;
