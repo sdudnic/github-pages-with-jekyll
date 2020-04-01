@@ -147,7 +147,6 @@ function drawChart(code, elementId) {
                         titlePosition: 'in'
                     },
                     curveType: 'function',
-                    is3D: true,
                     legend: {
                         position: 'none'
                     },
@@ -175,10 +174,12 @@ function drawChart(code, elementId) {
                         format: "dd/MM"
                     },
                     colors: ['orange', 'green', 'red'],
+                    pointSize: 20,
+                    pointShape: 'diamond',
                 };
 
                 var newChartOptions = JSON.parse(JSON.stringify(totalChartOptions)); // clone
-                newChartOptions.chart.title = "New cases";
+                newChartOptions.chart.title = "Daily(new) cases";
 
                 // var formatter = new google.visualization.DateFormat({ pattern: 'dd/MM/yy' });
                 // formatter.format(totalData, 0);

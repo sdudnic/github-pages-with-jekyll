@@ -1,16 +1,24 @@
 .charts-container {
     margin: 1em;
+    text-align: center;
 }
 
 .charts-container>article {
-    border: 1px solid lightgray;
-    margin: 0 0 1em 0;
+    border: 1px dotted lightgray;
+    margin: 1em auto 0 auto;
     border-radius: 1em;
     min-height: 300px;
+    max-width: 800px;
 }
 
 select {
     border: 1px solid lightgray;
+    font-weight: bold;
+}
+
+aside {
+    background-color: whitesmoke;
+    border-radius: .5em;
 }
 
 section.heading {
