@@ -45,18 +45,26 @@
 
                     <section class="heading">
                         <img src="assets/virus19.png" height="100">
-                        <label for="country">COVID-19 cases in </label>
-                        <select id="country"></select>
-                        <label> as by <span id="lastApiUpdate"></span>, latest 14 days history</label>
-                        <aside>
-                            <!-- <label>Today data:</label> -->
-                            <label for="confirmed">⚑ confimed ☛</label><input type="number" id="confirmed"
-                                name="confirmed">
-                            <label for="recovered">⚑ recovered ☛</label><input type="number" id="recovered"
-                                name="recovered">
-                            <label for="deaths">⚑ deaths ☛</label><input type="number" id="deaths" name="deaths">
-                            <!-- <button id="updateData">update</button> -->
-                        </aside>
+                        <div>
+                            <label for="country">COVID-19 evolution in </label>
+                        </div>
+                        <div>
+                            <select id="country"></select>
+                        </div>
+                        <div>
+                            <small>
+                                updated as of <span id="lastApiUpdate"></span>, 14 days trends
+                            </small>
+                            <aside>
+                                <!-- <label>Today data:</label> -->
+                                <label for="confirmed">⚑ confimed ☛</label><input type="number" id="confirmed"
+                                    name="confirmed">
+                                <label for="recovered">⚑ recovered ☛</label><input type="number" id="recovered"
+                                    name="recovered">
+                                <label for="deaths">⚑ deaths ☛</label><input type="number" id="deaths" name="deaths">
+                                <!-- <button id="updateData">update</button> -->
+                            </aside>
+                        </div>
                     </section>
 
                     <div class="charts-container">
@@ -65,7 +73,8 @@
                     </div>
 
                     <footer>
-                        <small>© 2020 <a href="https://github.com/sdudnic/covid-19">GitHub project</a> managed by sdudnic</small>
+                        <small>© 2020 <a href="https://github.com/sdudnic/covid-19">GitHub project</a> managed by
+                            sdudnic</small>
                     </footer>
                 </v-container>
             </v-content>

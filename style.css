@@ -15,6 +15,11 @@ select {
 
 section.heading {
     text-align: center;
+    margin: 1em;
+}
+
+section.heading>img {
+    float: left;
 }
 
 input[type=number] {
@@ -35,4 +40,8 @@ label[for=deaths] {
 
 footer {
     text-align: right;
+}
+
+#lastApiUpdate {
+    font-weight: bold;
 }
