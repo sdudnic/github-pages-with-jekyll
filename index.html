@@ -4,7 +4,6 @@
 <head>
     <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
 
@@ -37,11 +36,9 @@
         <v-app>
             <v-app-bar app color="amber">
                 <img class="header-icon" src="assets/virus19.png">
-                <v-toolbar-title>COVID-19&nbsp;<span class="font-weight-light">evolution &nbsp;<span
-                            v-if="country.name">in&nbsp;{{country.name}}</span></span>
-                </v-toolbar-title>
-                <v-autocomplete v-model="country.iso3" :items="countriesList" single-line>
-                </v-autocomplete>
+                <v-toolbar-title>COVID-19&nbsp;<span class="font-weight-light">evolution&nbsp;<span
+                            v-if="countryName">in&nbsp;{{countryName}}</span></span></v-toolbar-title>
+
                 <v-spacer></v-spacer>
 
                 <v-btn icon>
@@ -50,15 +47,23 @@
             </v-app-bar>
             <v-content>
                 <v-container fluid>
-                    <section class="heading">
-                        <div>
+                    <v-row align="center" justify="center">
+                        <v-col cols="6">
+                            <v-autocomplete v-model="countryCode" :items="countries" item-text="name" item-value="iso3">
+                            </v-autocomplete>
+                            <v-col cols="12">
+                                <v-card-text class="py-2 text-center">
+                                    last check <span id="lastApiUpdate">{{last.updateDate | isoDateTime}} (+
+                                        new cases
+                                        today)</span>
+                                </v-card-text>
+                            </v-col>
 
-                        </div>
-                        <div>
-                            <small>
-                                last check <span id="lastApiUpdate">{{last.updateDate | isoDateTime}} (+ new cases
-                                    today)</span>
-
+                        </v-col>
+                    </v-row>
+                    <v-row align="center">
+                        <v-col cols="12">
+                            <v-card-text class="py-2 text-center">
                                 <aside>
                                     <span><label for="confirmed">⚑ confimed ☛ {{last.total.confirmed}}
                                             (+{{last.new.confirmed}})</label><input type="number" id="confirmed"
@@ -70,9 +75,12 @@
                                             (+{{last.new.deaths}})</label><input type="number" id="deaths"
                                             name="deaths"></span>
                                 </aside>
-                            </small>
-                        </div>
-                    </section>
+                            </v-card-text>
+                        </v-col>
+                    </v-row>
+                    <div>
+
+                    </div>
                     <div class="charts-container">
                         <article class="new-chart"></article>
                         <article class="total-chart"></article>

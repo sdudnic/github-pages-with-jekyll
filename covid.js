@@ -4,10 +4,7 @@ new Vue({
     data: {
         DEFAULT_CODE: "mda",
         daysNumber: 14,
-        country: {
-            iso3: "",
-            name: ""
-        },
+        countryCode: "",
         last: {
             total: {
                 confirmed: 0,
@@ -58,7 +55,7 @@ new Vue({
             pointSize: 20,
             pointShape: 'diamond',
         },
-        countriesList: countries,
+        countries: countriesJs,
         apiUrl: {
             timeline: "https://covidapi.info/api/v1/country/***",
             current: "https://services1.arcgis.com/0MSEUqKaxRlEPj5g/arcgis/rest/services/Coronavirus_2019_nCoV_Cases/FeatureServer/2/query?where=UPPER(Country_Region)%20like%20%27%25***%25%27&outFields=Last_Update,Confirmed,Deaths,Recovered,Country_Region&returnGeometry=false&outSR=4326&f=json"
@@ -66,7 +63,7 @@ new Vue({
         startDateString: "",
     },
     methods: {
-        getApiUrl(countryCode, isTimeline) {
+        getApiUrl(countryCode, countryName, isTimeline) {
             if (!countryCode) {
                 return null;
             }
@@ -76,13 +73,11 @@ new Vue({
             if (isTimeline) {
                 url = this.apiUrl.timeline.replace(placeholder, countryCode);
             } else { // current value, no timeline
-                var country = countries.find((c) => c.iso3 === countryCode.toLowerCase());
-                if (country) {
-                    countryName = country.name;
+                if (countryName) {
+                    url = this.apiUrl.current.replace(placeholder, countryName);
                 } else {
                     return null;
                 }
-                url = this.apiUrl.current.replace(placeholder, countryName);
             }
             return url;
         },
@@ -95,7 +90,7 @@ new Vue({
             this.last.total.recovered = recovered;
             this.last.total.deaths = deaths;
         },
-        drawChart(code) {
+        drawChart(countryCode, countryName) {
             var vm = this;
             var totalData = {};
             var newData = {};
@@ -122,7 +117,7 @@ new Vue({
                 type: 'string'
             });
 
-            var timelineApi = this.getApiUrl(code, true);
+            var timelineApi = this.getApiUrl(countryCode, countryName, true);
             var previous = {
                 confirmed: 0,
                 recovered: 0,
@@ -174,7 +169,7 @@ new Vue({
                     vm.updateFields();
                 })
                 .always(() => {
-                    var currentApi = vm.getApiUrl(code, false);
+                    var currentApi = vm.getApiUrl(countryCode, countryName, false);
 
                     fetch(currentApi).then((d) => d.json()).then((data) => {
                         var item = data.features[0].attributes;
@@ -184,7 +179,8 @@ new Vue({
                         vm.updateFields(myDate, item.Confirmed, item.Recovered, item.Deaths);
 
                         var newChartOptions = JSON.parse(JSON.stringify(vm.totalChartOptions)); // clone
-                        newChartOptions.chart.title = "Daily(new) cases";
+                        vm.totalChartOptions.chart.title = "Total cases in " + countryName;
+                        newChartOptions.chart.title = "Daily(new) cases in " + countryName;
 
                         var formatter = new google.visualization.DateFormat({
                             pattern: 'dd/MM/yy hh:mm'
@@ -214,16 +210,14 @@ new Vue({
 
             code = code.toLowerCase();
 
-            var codeISO = "";
-            var countryFound = countries.find(c => c.value === code);
-
+            var countryFound = countriesJs.find(c => c.iso3 === code);
             if (countryFound) {
-                return countryFound.value;
+                return countryFound.iso3;
             }
 
-            countryFound = countries.find(c.text.toLowerCase() === code);
+            countryFound = countriesJs.find(c => c.name.toLowerCase() === code);
             if (countryFound) {
-                return countryFound.value;
+                return countryFound.iso3;
             } else {
                 return null;
             }
@@ -256,9 +250,10 @@ new Vue({
                 return null;
             }
         },
-        countryChanged(newValue) {
-            this.drawChart(newValue.iso3);
-            this.changeTitle(newValue.name);
+        countryCodeChanged(newCode) {
+            var name = this.countryName;
+            this.drawChart(newCode, name);
+            this.changeTitle(name);
         }
 
     },
@@ -271,11 +266,25 @@ new Vue({
             return dateText;
         }
     },
-    watch: {
-        country: {
-            handler: 'countryChanged',
-            deep: true
+    computed: {
+        countryName() {
+            var iso3 = this.countryCode;
+            var countries = countriesJs;
+
+            if (!iso3 || !countries) {
+                return "";
+            };
+
+            var country = countries.find(c => c.iso3 === iso3.toLowerCase());
+            if (country && country.name) {
+                return country.name;
+            } else {
+                return "";
+            }
         }
+    },
+    watch: {
+        countryCode: 'countryCodeChanged'
     },
 
     mounted: function () {
@@ -299,12 +308,12 @@ new Vue({
 
                 var urlCode = vm.getIsoCodeFromUrl();
                 if (urlCode) {
-                    vm.country.iso3 = urlCode;
+                    vm.countryCode = urlCode;
                 } else {
                     vm.getIso3CodeFromIp().then((iso3) => {
                         iso3 = iso3 || DEFAULT_CODE;
                         iso3 = iso3.toLowerCase();
-                        vm.country.iso3 = iso3;
+                        vm.countryCode = iso3;
                     });
                 }
             },

@@ -1,4 +1,4 @@
- var countries = [
+ var countriesJs = [
   { name: "Afghanistan", iso3: "afg" },
   { name: "Albania", iso3: "alb" },
   { name: "Algeria", iso3: "dza" },
