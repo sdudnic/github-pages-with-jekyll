@@ -76,9 +76,9 @@ new Vue({
             if (isTimeline) {
                 url = this.apiUrl.timeline.replace(placeholder, countryCode);
             } else { // current value, no timeline
-                var country = countries.find((c) => c.value.toLowerCase() === countryCode.toLowerCase());
+                var country = countries.find((c) => c.iso3 === countryCode.toLowerCase());
                 if (country) {
-                    countryName = country.text;
+                    countryName = country.name;
                 } else {
                     return null;
                 }

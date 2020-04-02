@@ -11,11 +11,6 @@
     max-width: 800px;
 }
 
-select {
-    border: 1px solid lightgray;
-    font-weight: bold;
-}
-
 aside {
     background-color: whitesmoke;
     border-radius: .5em;
