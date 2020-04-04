@@ -36,14 +36,8 @@
         <v-app>
             <v-app-bar app color="amber">
                 <img class="header-icon" src="assets/virus19.png">
-                <v-toolbar-title>COVID-19&nbsp;<span class="font-weight-light">evolution&nbsp;<span
-                            v-if="countryName">in&nbsp;{{countryName}}</span></span></v-toolbar-title>
-
-                <v-spacer></v-spacer>
-
-                <v-btn icon>
-                    <v-icon>mid-heart</v-icon>
-                </v-btn>
+                <v-toolbar-title>COVID-19&nbsp;<span class="font-weight-light" v-if="countryName">{{countryName}}</span>
+                </v-toolbar-title>
             </v-app-bar>
             <v-content>
                 <v-container fluid>
@@ -53,9 +47,9 @@
                             </v-autocomplete>
                             <v-col cols="12">
                                 <v-card-text class="py-2 text-center">
-                                    last check <span id="lastApiUpdate">{{last.updateDate | isoDateTime}} (+
-                                        new cases
-                                        today)</span>
+                                    {{strings.lastData}} <span
+                                        id="lastApiUpdate">{{last.updateDate | isoDateTime}}</span>
+                                    (+{{strings.today}})
                                 </v-card-text>
                             </v-col>
 
@@ -65,13 +59,15 @@
                         <v-col cols="12">
                             <v-card-text class="py-2 text-center">
                                 <aside>
-                                    <span><label for="confirmed">⚑ confimed ☛ {{last.total.confirmed}}
+                                    <span><label for="confirmed">⚑ {{strings.chart.confirmed}} ☛
+                                            {{last.total.confirmed}}
                                             (+{{last.new.confirmed}})</label><input type="number" id="confirmed"
                                             name="confirmed"></span>
-                                    <span><label for="recovered">⚑ recovered ☛ {{last.total.recovered}}
+                                    <span><label for="recovered">⚑ {{strings.chart.recovered}} ☛
+                                            {{last.total.recovered}}
                                             (+{{last.new.recovered}})</label><input type="number" id="recovered"
                                             name="recovered"></span>
-                                    <span><label for="deaths">⚑ deaths ☛ {{last.total.deaths}}
+                                    <span><label for="deaths">⚑ {{strings.chart.deaths}} ☛ {{last.total.deaths}}
                                             (+{{last.new.deaths}})</label><input type="number" id="deaths"
                                             name="deaths"></span>
                                 </aside>
@@ -88,13 +84,20 @@
                 </v-container>
             </v-content>
             <v-footer absolute app>
-                <v-card-text class="py-2 text-right">
+                <v-card-text class="text-right">
                     {{ new Date().getFullYear() }} <a href="https://github.com/sdudnic/covid-19"
                         target="blank">covid-19</a> project by
                     <a href="https://github.com/sdudnic" target="blank">sdudnic</a> & co
+                    <v-spacer></v-spacer>
+                    <small>{{strings.petition.moldovan}} - <strong><a :href="strings.petition.link"
+                            target="blank">{{strings.petition.title}}</a></strong></small>
                 </v-card-text>
-
             </v-footer>
+            <v-overlay opacity="1" :value="loading" color="white">
+                <v-progress-circular indeterminate size="64">
+                    Loading...
+                </v-progress-circular>
+            </v-overlay>
         </v-app>
     </div>
 

@@ -2,9 +2,14 @@ new Vue({
     el: '#app',
     vuetify: new Vuetify(),
     data: {
-        DEFAULT_CODE: "mda",
+        strings: {
+            chart: {},
+            petition: {}
+        },
+        language: "en",
+        loading: true,
         daysNumber: 14,
-        countryCode: "",
+        countryCode: "mda",
         last: {
             total: {
                 confirmed: 0,
@@ -22,7 +27,7 @@ new Vue({
         totalChartOptions: {
             chart: {
                 title: 'Total cases',
-                titlePosition: 'in'
+                titlePosition: 'out'
             },
             curveType: 'function',
             legend: {
@@ -63,6 +68,14 @@ new Vue({
         startDateString: "",
     },
     methods: {
+        getStrings() {
+            var vm = this;
+            var browserLanguage = navigator.language || navigator.userLanguage;
+            this.language = browserLanguage || "en";
+            return fetch("strings.json")
+                .then((s) => s.json())
+                .then((st) => vm.strings = st[vm.language]);
+        },
         getApiUrl(countryCode, countryName, isTimeline) {
             if (!countryCode) {
                 return null;
@@ -179,8 +192,8 @@ new Vue({
                         vm.updateFields(myDate, item.Confirmed, item.Recovered, item.Deaths);
 
                         var newChartOptions = JSON.parse(JSON.stringify(vm.totalChartOptions)); // clone
-                        vm.totalChartOptions.chart.title = "Total cases in " + countryName;
-                        newChartOptions.chart.title = "Daily(new) cases in " + countryName;
+                        vm.totalChartOptions.chart.title = vm.strings.chart.totalTitle + countryName;
+                        newChartOptions.chart.title = vm.strings.chart.newTitle + countryName;
 
                         var formatter = new google.visualization.DateFormat({
                             pattern: 'dd/MM/yy hh:mm'
@@ -281,44 +294,57 @@ new Vue({
             } else {
                 return "";
             }
-        }
+        },
     },
     watch: {
         countryCode: 'countryCodeChanged'
     },
-
-    mounted: function () {
-        var vm = this;
-
+    beforeMount() {
         // define startDate
         Date.prototype.addDays = function (days) {
             var date = new Date(this.valueOf());
             date.setDate(date.getDate() + days);
             return date;
         }
-        var now = new Date();
-        var utcNow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-        startDate = utcNow.addDays(-this.daysNumber - 1);
-        this.startDateString = startDate.toISOString().slice(0, 10);
-        // end define startDate
+        this.getStrings();
+    },
+    mounted: function () {
+        var vm = this;
 
-        // Load the Visualization API and the line package.
-        google.charts.load('current', {
-            callback: function () {
+        // get translations
+        this.getStrings().then(() => {
+            var now = new Date();
+            var utcNow = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+            startDate = utcNow.addDays(-vm.daysNumber - 1);
+            vm.startDateString = startDate.toISOString().slice(0, 10);
+            // end define startDate
 
-                var urlCode = vm.getIsoCodeFromUrl();
-                if (urlCode) {
-                    vm.countryCode = urlCode;
-                } else {
-                    vm.getIso3CodeFromIp().then((iso3) => {
-                        iso3 = iso3 || DEFAULT_CODE;
-                        iso3 = iso3.toLowerCase();
-                        vm.countryCode = iso3;
-                    });
-                }
-            },
-            'packages': ['line'],
-            language: "en"
+            // Load the Visualization API and the line package.
+            google.charts.load('current', {
+                callback: function () {
+
+                    var urlCode = vm.getIsoCodeFromUrl();
+                    if (urlCode) {
+                        vm.countryCode = urlCode;
+                    } else {
+                        vm.getIso3CodeFromIp().then((iso3) => {
+                            if (iso3) {
+                                iso3 = iso3.toLowerCase();
+                                vm.countryCode = iso3;
+                            } else {
+                                // try to throw a countrycode change
+                                vm.countryCode = vm.countryCode;
+                            }
+                        });
+                    }
+                    // show the page
+                    vm.loading = false;
+                },
+                'packages': ['line'],
+                language: vm.language
+            });
         });
+
+
     }
 });
