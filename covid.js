@@ -71,7 +71,7 @@ new Vue({
         getStrings() {
             var vm = this;
             var browserLanguage = navigator.language || navigator.userLanguage;
-            this.language = browserLanguage || "en";
+            this.language = browserLanguage.slice(0, 2);
             return fetch("strings.json")
                 .then((s) => s.json())
                 .then((st) => vm.strings = st[vm.language]);
